@@ -1,3 +1,6 @@
+import {cart, addToCart} from '../data/cart.js'
+import {products} from '../data/products.js'
+
 let productsHTML = '';
 
 products.forEach((product) => {
@@ -41,7 +44,7 @@ products.forEach((product) => {
 
             <div class="product-spacer"></div>
 
-            <div class="added-to-cart">
+            <div class="added-to-cart js-added-cart-${product.id}">
                 <img src="images/icons/checkmark.png">
                 Added
                 </div>
@@ -56,6 +59,35 @@ products.forEach((product) => {
     `; 
 });
 
+function updateCartQuantity() {
+    let cartQuantity = 0;
+
+    cart.forEach((cartItem) => {
+        cartQuantity += cartItem.quantity;
+    })
+
+    document.querySelector('.js-cart-quantity').innerHTML =
+    cartQuantity; 
+}
+
+function updateMessage(productId) {
+    const message = document.querySelector(`.js-added-cart-${productId}`);
+
+    message.classList.add('message-listed');
+
+    setTimeout(() => {
+        const previousTimeoutID = addedMessageTimeouts[productId];
+        if (previousTimeoutID) {
+            clearTimeout(previousTimeoutID);
+        }
+
+        const timeoutId = setTimeout(() => {
+            message.classList.remove('message-listed')}, 2000);
+        })
+}
+
+const addedMessageTimeouts = {};
+
 document.querySelector('.js-products-grid').innerHTML = productsHTML;
 
 document.querySelectorAll('.js-add-to-cart').forEach((button) => 
@@ -64,35 +96,11 @@ document.querySelectorAll('.js-add-to-cart').forEach((button) =>
             const productId = button.dataset.productId;
 
             const selectElement= document.querySelector(`.js-quantity-selector-${productId}`);
-            const productQuantity = selectElement.value;
-            console.log(productQuantity);
+            const productQuantity = Number(selectElement.value);
             
-            let done = false;
-            for (let i = 0; i < cart.length; i++) {
-                if (cart[i].productId === productId) {
-                    cart[i].quantity += Number(productQuantity)
-                    done = true
-                }
-            }
-
-            if (done === false) {
-                cart.push({
-                    productId: productId,
-                    quantity: 1
-                })
-            }
-
-            console.log(cart);
-
-            let cartQuantity = 0;
-
-            cart.forEach((item) => {
-                cartQuantity += item.quantity;
-            })
-
-            document.querySelector('.js-cart-quantity').innerHTML =
-                cartQuantity;
-
-        })
-    }
+            addToCart(productId, productQuantity);
+            updateCartQuantity();
+            updateMessage(productId);
+        }
+    )}
 )
